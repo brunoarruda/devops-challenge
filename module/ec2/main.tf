@@ -9,14 +9,16 @@ module "ec2_instance" {
   name                    = var.name
   instance_type           = var.instance_type
   ami                     = var.ami
-  vpc_security_group_ids  = var.vpc_security_group_ids
-  subnet_id               = var.subnet_id
   root_block_device       = [var.root_block_device]
 
-  key_name = var.name
+  key_name  = var.name
+  user_data = var.user_data
+
+  vpc_security_group_ids  = var.vpc_security_group_ids
+  subnet_id               = var.subnet_id
+  associate_public_ip_address = var.public_ip_address
 
   monitoring = false
-  associate_public_ip_address = var.public_ip_address
 
   tags = {
     Provisioned = "terraform"
