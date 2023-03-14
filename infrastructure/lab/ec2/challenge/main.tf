@@ -17,14 +17,20 @@ curl --silent -L "https://download.opensuse.org/repositories/devel:/kubic:/libco
 apt-get -qq update
 apt-get -qq -y install podman
 
+echo "instaling nginx"
+apt-get -qq -y install nginx
+echo "stream { server { listen 0.0.0.0:9443; proxy_pass 192.168.39.131:8443; }}" >> /etc/nginx/nginx.conf
+sudo systemctl restart nginx
+
 echo "installing minikube"
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 install minikube-linux-amd64 /usr/local/bin/minikube
 rm minikube-linux-amd64s
 
-PUBLIC_IP=$(curl --silent http://169.254.169.254/latest/meta-data/public-ipv4)
-su - ubuntu -c "minikube start --driver=podman --container-runtime=cri-o --listen-address=0.0.0.0 --embed-certs"
+echo "starting cluster k8s"
+su - ubuntu -c "minikube start --driver=podman --container-runtime=cri-o --embed-certs"
 
+echo "installing ArgoCD"
 su - ubuntu -c "minikube kubectl -- create namespace argocd"
 su - ubuntu -c "minikube kubectl -- apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml"
 EOF
