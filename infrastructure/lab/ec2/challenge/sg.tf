@@ -48,8 +48,8 @@ resource "aws_security_group_rule" "access_https" {
 
 resource "aws_security_group_rule" "access_k8s_api" {
   type                     = "ingress"
-  from_port                = 6443
-  to_port                  = 6443
+  from_port                = 8443
+  to_port                  = 8443
   protocol                 = "TCP"
   cidr_blocks              = ["0.0.0.0/0"]
   security_group_id        = aws_security_group.minikube.id
