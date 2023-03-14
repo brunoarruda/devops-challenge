@@ -29,6 +29,7 @@ rm minikube-linux-amd64s
 
 echo "starting cluster k8s"
 su - ubuntu -c "minikube start --driver=podman --container-runtime=cri-o --embed-certs"
+su - ubuntu -c "minikube update-context"
 
 echo "installing ArgoCD"
 su - ubuntu -c "minikube kubectl -- create namespace argocd"
