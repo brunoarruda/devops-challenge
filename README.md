@@ -6,8 +6,9 @@ Repositório contendo os módulos e configurações de infraestrutura Terraform 
 
 - [x] EC2
   - [x] módulo
+  - [ ] outputs
   - [x] instância
-  - [ ] script para instalação do minikube e argoCD
+  - [x] script para instalação do minikube e argoCD
 - [x] backend S3
 - [x] chave ssh da instância minikube
 - [ ] módulo SG
@@ -21,7 +22,7 @@ Para criação dos recursos
 cd infrastructure/lab/ec2/challenge
 terraform init
 terraform plan -var-file=./variables.tfvars -out tf.plan
-terraform apply tf.plan -auto-approve
+terraform apply -auto-approve tf.plan
 ```
 
 Para destruição dos recursos
@@ -30,3 +31,21 @@ Para destruição dos recursos
 cd infrastructure/lab/ec2/challenge
 terraform destroy -var-file=./variables.tfvars -auto-approve
 ```
+
+## Sobre o Repositório
+
+O repositório tem a seguinte estrutura:
+
+```text
+├── infrastructure
+│   └── lab # conta ou ambiente do recurso
+│       └── ec2 # tipo de recurso
+│           └── challenge # projeto
+│               └── <arquivos terraform para deployment>
+├── module
+│   └── ec2 # tipo do módulo
+│       └── <arquivos de definição do módulo>
+└── README.md
+```
+
+O ideal seria haver 2 repositórios distintos, um para os módulos e outra para a infraestrutura que consome esses módulos, mas devido ao tempo restrito, eu juntei ambos em um repositório só.
