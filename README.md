@@ -6,7 +6,7 @@ Repositório contendo os módulos e configurações de infraestrutura Terraform 
 
 - [x] EC2
   - [x] módulo
-  - [ ] outputs
+  - [x] outputs
   - [x] instância
   - [x] script para instalação do minikube e argoCD
   - [ ] elastic IP
