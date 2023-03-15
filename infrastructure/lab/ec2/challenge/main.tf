@@ -11,29 +11,66 @@ locals {
   user_data = <<EOF
 #!/bin/bash
 echo "user_data script!"
-echo "installing podman"
-echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-curl --silent -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/Release.key" | sudo apt-key add -
-apt-get -qq update
-apt-get -qq -y install podman
 
-echo "instaling nginx"
-apt-get -qq -y install nginx
-echo "stream { server { listen 0.0.0.0:9443; proxy_pass 192.168.39.131:8443; }}" >> /etc/nginx/nginx.conf
-sudo systemctl restart nginx
+echo "Configuring baremetal minikube pre-requirements"
+
+echo "Disabling AppArmor"
+systemctl stop apparmor
+systemctl disable apparmor
+
+echo "installing conntrack and crictl packages"
+apt-get -q update
+apt-get -q -y install conntrack
+VERSION="v1.26.0"
+wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
+tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
+rm -f crictl-$VERSION-linux-amd64.tar.gz
+
+echo "installing docker"
+curl -fsSL https://get.docker.com | bash
+usermod -aG docker ubuntu
+
+echo "installing CRI-Dockerd"
+wget https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.1/cri-dockerd-0.3.1.amd64.tgz
+tar xvf cri-dockerd-0.3.1.amd64.tgz
+mv ./cri-dockerd/cri-dockerd /usr/bin/
+wget https://raw.githubusercontent.com/Mirantis/cri-dockerd/master/packaging/systemd/cri-docker.service
+wget https://raw.githubusercontent.com/Mirantis/cri-dockerd/master/packaging/systemd/cri-docker.socket
+mv cri-docker.socket cri-docker.service /etc/systemd/system/
+rm -rf cri-dockerd*
+
+systemctl daemon-reload
+systemctl enable cri-docker.service
+systemctl enable --now cri-docker.socket
+systemctl status cri-docker.socket
+
+# additional prereq to avoid the following error
+# Exiting due to HOST_JUJU_LOCK_PERMISSION: Failed to start host: boot lock: unable to open /tmp/...: permission denied
+sysctl fs.protected_regular=0
 
 echo "installing minikube"
-curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+curl --silent -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 install minikube-linux-amd64 /usr/local/bin/minikube
-rm minikube-linux-amd64s
 
-echo "starting cluster k8s"
-su - ubuntu -c "minikube start --driver=podman --container-runtime=cri-o --embed-certs"
-su - ubuntu -c "minikube update-context"
+echo "starting cluster k8s with docker"
+PUBLIC_IP=$(curl --silent http://169.254.169.254/latest/meta-data/public-ipv4)
+minikube start --driver=none --cni=calico --apiserver-ips $PUBLIC_IP
+echo "@reboot /usr/local/bin/minikube start" | crontab -
+
+echo "provisioning kubeconfig"
+LOCAL_IP=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)
+su - ubuntu -c "mkdir /home/ubuntu/.kube"
+minikube kubectl -- config view --flatten=true --raw > /home/ubuntu/.kube/config
+sed -i /home/ubuntu/.kube/config -e "s/$LOCAL_IP/$PUBLIC_IP/"
+chown ubuntu:ubuntu /home/ubuntu/.kube/config
+
+
+echo "installing ingress"
+minikube addons enable ingress
 
 echo "installing ArgoCD"
-su - ubuntu -c "minikube kubectl -- create namespace argocd"
-su - ubuntu -c "minikube kubectl -- apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml"
+minikube kubectl -- create namespace argocd
+minikube kubectl -- apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v2.6.5/manifests/install.yaml
 EOF
 }
 
