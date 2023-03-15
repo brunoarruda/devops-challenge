@@ -59,7 +59,7 @@ echo "@reboot sleep 30 && /usr/local/bin/minikube start" | crontab -
 
 echo "provisioning kubeconfig"
 LOCAL_IP=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)
-su - ubuntu -c "mkdir /home/ubuntu/.kube"
+su - ubuntu -c "mkdir -p /home/ubuntu/.kube"
 minikube kubectl -- config view --flatten=true --raw > /home/ubuntu/.kube/config
 sed -i /home/ubuntu/.kube/config -e "s/$LOCAL_IP/$PUBLIC_IP/"
 chown ubuntu:ubuntu /home/ubuntu/.kube/config
