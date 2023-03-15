@@ -55,7 +55,7 @@ install minikube-linux-amd64 /usr/local/bin/minikube
 echo "starting cluster k8s with docker"
 PUBLIC_IP=$(curl --silent http://169.254.169.254/latest/meta-data/public-ipv4)
 minikube start --driver=none --cni=calico --apiserver-ips $PUBLIC_IP
-echo "@reboot /usr/local/bin/minikube start" | crontab -
+echo "@reboot sleep 30 && /usr/local/bin/minikube start" | crontab -
 
 echo "provisioning kubeconfig"
 LOCAL_IP=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)
