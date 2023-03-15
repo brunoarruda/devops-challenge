@@ -64,8 +64,9 @@ minikube kubectl -- config view --flatten=true --raw > /home/ubuntu/.kube/config
 sed -i /home/ubuntu/.kube/config -e "s/$LOCAL_IP/$PUBLIC_IP/"
 chown ubuntu:ubuntu /home/ubuntu/.kube/config
 
-echo "installing ingress"
+echo "installing ingress and metrics server addons"
 minikube addons enable ingress
+minikube addons enable metrics-server
 
 echo "installing ArgoCD"
 minikube kubectl -- create namespace argocd
