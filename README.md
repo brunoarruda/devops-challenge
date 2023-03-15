@@ -9,6 +9,7 @@ Repositório contendo os módulos e configurações de infraestrutura Terraform 
   - [ ] outputs
   - [x] instância
   - [x] script para instalação do minikube e argoCD
+  - [ ] elastic IP
 - [x] backend S3
 - [x] chave ssh da instância minikube
 - [ ] módulo SG

@@ -64,7 +64,6 @@ minikube kubectl -- config view --flatten=true --raw > /home/ubuntu/.kube/config
 sed -i /home/ubuntu/.kube/config -e "s/$LOCAL_IP/$PUBLIC_IP/"
 chown ubuntu:ubuntu /home/ubuntu/.kube/config
 
-
 echo "installing ingress"
 minikube addons enable ingress
 
@@ -92,3 +91,9 @@ module "ec2" {
       tags = null
     }
 }
+
+# TODO: usar elastic IP
+# resource "aws_eip" "lb" {
+#   instance = module.ec2.id
+#   vpc      = true
+# }
